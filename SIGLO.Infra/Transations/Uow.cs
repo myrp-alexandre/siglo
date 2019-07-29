@@ -1,25 +1,29 @@
 ﻿using NHibernate;
-using SIGLO.Infra.Context;
-using System.Threading.Tasks;
 
 namespace SIGLO.Infra.Transations
 {
     public class Uow : IUow
     {
-        private readonly ISession _session;
-        public Uow(ISession session)
+        private readonly ISessionFactory _sessionFactory;
+        private ISession _session;
+
+        public ISession Session => _session;
+
+        public Uow(ISessionFactory sessionFactory)
         {
-            _session = session;
+            _sessionFactory = sessionFactory;
+            _session = null;
         }
 
-        public async Task Commit()
+        public ISession OpenSession()
         {
-          await _session.FlushAsync();
-        }
-
-        public void Rollback()
-        {
-            // Do nothing :)
+            if (_session == null)
+            {
+                _session = _sessionFactory.OpenSession();
+                _session.FlushMode = FlushMode.Commit;
+                _session.CacheMode = CacheMode.Normal; //aqui voce configura algumas coisas da sessao (uma por request por ser injetada via scoped)
+            }
+            return _session;
         }
     }
 }

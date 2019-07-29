@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NHibernate;
 using SIGLO.Domain.Handlers;
 using SIGLO.Domain.Repositories;
-using SIGLO.Infra.Context;
+using SIGLO.Infra;
 using SIGLO.Infra.Repositories;
 using SIGLO.Infra.Transations;
 using SIGLO.Shared;
@@ -34,11 +35,10 @@ namespace SIGLO.Api
             });
 
             services.AddResponseCompression();
-
-            services.AddSingleton(SIGLODataContext_NH.SessionFactory());
-            services.AddScoped<SIGLODataContext_DP, SIGLODataContext_DP>();
-
-            services.AddTransient<IUow, Uow>();
+            
+            services.AddSingleton<ISessionFactory>((x) => NHibernateSessionFactoryProvider.CreateSessionFactory());
+            services.AddScoped<IUow, Uow>();
+            services.AddScoped<ISession>((x) => x.GetRequiredService<IUow>().OpenSession());
 
             services.AddTransient<IContractRepository, ContractRepository>();
             services.AddTransient<IAccountRepository, AccountRepository>();
