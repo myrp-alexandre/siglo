@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using NHibernate;
+using System.Threading.Tasks;
 
 namespace SIGLO.Infra.Transations
 {
     public interface IUow
     {
-        Task Commit();
-        void Rollback();            
+        ISession OpenSession();        
     }
 }
